@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import "../CSS/LoginPage.css";
 import "../CSS/loginResponsiveness.css";
+import { useNavigate } from "react-router-dom";
 
 function LoginPage() {
   const [userData, setUserData] = useState({
@@ -9,7 +10,7 @@ function LoginPage() {
     name: "",
     email: "",
   });
-
+  const navigate = useNavigate();
   const handleChange = (e) => {
     setUserData({
       ...userData,
@@ -24,8 +25,9 @@ function LoginPage() {
         "http://localhost:3000/user-portal/register",
         userData
       );
-      alert("Registration successful!");
-      console.log(response.data);
+      localStorage.setItem("userId", response.data.userId);
+
+      navigate("/user-dashboard", { replace: true });
     } catch (error) {
       console.error(error);
       alert("Error registering user.");

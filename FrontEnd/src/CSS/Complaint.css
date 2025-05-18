@@ -1,0 +1,77 @@
+.user-complain-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 32px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.user-complain-container h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: #1a202c;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+}
+
+.user-complain-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-complain-container textarea,
+.user-complain-container input[type="text"],
+.user-complain-container input[type="datetime-local"] {
+  padding: 16px;
+  margin-bottom: 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 12px;
+  background-color: #f1f5f9;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.user-complain-container textarea {
+  min-height: 150px;
+}
+
+.user-complain-container textarea:focus,
+.user-complain-container input[type="text"]:focus,
+.user-complain-container input[type="datetime-local"]:focus {
+  outline: 2px solid #3b82f6;
+}
+
+.user-complain-container button {
+  padding: 16px;
+  background-color: #3b82f6;
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 8px;
+}
+
+.user-complain-container button:hover {
+  background-color: #2563eb;
+}
+
+.user-complain-container button:disabled {
+  background-color: #93c5fd;
+}
+
+@media (max-width: 600px) {
+  .user-complain-container {
+    margin: 20px 16px;
+    padding: 24px;
+  }
+}
