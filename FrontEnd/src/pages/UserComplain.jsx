@@ -19,7 +19,6 @@ function UserComplain() {
         description,
       });
       alert("Complaint submitted successfully!");
-      navigate("/");
     } catch (error) {
       console.error(error);
       alert("Error submitting complaint.");
