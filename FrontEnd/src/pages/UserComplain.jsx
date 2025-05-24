@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "../CSS/Complaint.css";
+import { Link } from "react-router-dom";
 
 function UserComplain() {
   const [description, setDescription] = useState("");
@@ -39,6 +40,7 @@ function UserComplain() {
         />
         <button type="submit">Submit Complaint</button>
       </form>
+      <Link to="/viewComplains">Your Complains</Link>
     </div>
   );
 }
