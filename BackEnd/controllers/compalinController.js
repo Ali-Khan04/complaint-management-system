@@ -74,8 +74,7 @@ const complainsController = {
         .input("description", sql.NVarChar, description).query(`
         UPDATE Complaints
         SET description = @description
-        WHERE complaintId = @complaintId AND userId = @userId
-      `);
+        WHERE complaintId = @complaintId AND userId = @userId   `);
 
       console.log("Rows Affected:", result.rowsAffected);
 
@@ -123,8 +122,6 @@ const complainsController = {
           "DELETE FROM Complaints WHERE complaintId = @complaintId AND userId = @userId"
         );
 
-      console.log("Rows Affected:", result.rowsAffected);
-
       if (result.rowsAffected[0] > 0) {
         return res
           .status(200)
@@ -137,6 +134,61 @@ const complainsController = {
       return res
         .status(500)
         .json({ message: "Server error", error: error.message });
+    }
+  },
+
+  getAllComplaints: async (req, res) => {
+    try {
+      const pool = await poolPromise;
+      const result = await pool
+        .request()
+        .query("SELECT * FROM Complaints ORDER BY complaintId DESC");
+
+      res.status(200).json(result.recordset);
+    } catch (error) {
+      console.error("Error fetching all complaints:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+
+  markAsReviewed: async (req, res) => {
+    const { id } = req.params;
+    try {
+      const pool = await poolPromise;
+      const result = await pool
+        .request()
+        .input("complaintId", sql.Int, id)
+        .query(
+          "UPDATE Complaints SET isReviewed = 1 WHERE complaintId = @complaintId"
+        );
+
+      if (result.rowsAffected[0] === 0) {
+        return res.status(404).json({ message: "Complaint not found" });
+      }
+
+      res.status(200).json({ message: "Complaint marked as reviewed" });
+    } catch (error) {
+      console.error("Error marking complaint as reviewed:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+
+  // Admin related functions
+  registerAdmin: async (req, res) => {
+    try {
+      const { adminId, name } = req.body;
+      const pool = await poolPromise;
+
+      await pool
+        .request()
+        .input("adminId", sql.Int, adminId)
+        .input("name", sql.NVarChar(100), name)
+        .query("INSERT INTO Admin (adminId, name) VALUES (@adminId, @name)");
+
+      res.status(201).json({ message: "Admin registered successfully" });
+    } catch (error) {
+      console.error("Error registering admin:", error);
+      res.status(500).json({ message: "Server error", error: error.message });
     }
   },
 };
