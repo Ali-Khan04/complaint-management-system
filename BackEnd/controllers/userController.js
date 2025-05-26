@@ -1,4 +1,5 @@
 import { sql, poolPromise } from "../db/config.js";
+import { userQueries } from "../db/query.js";
 
 export const registerUser = async (req, res) => {
   try {
@@ -9,9 +10,7 @@ export const registerUser = async (req, res) => {
       .input("userId", sql.Int, userId)
       .input("name", sql.VarChar(100), name)
       .input("email", sql.VarChar(100), email)
-      .query(
-        "INSERT INTO User_table (userId, name, email) VALUES (@userId, @name, @email)"
-      );
+      .query(userQueries.registerUser);
 
     res.status(201).json({ userId });
   } catch (err) {
