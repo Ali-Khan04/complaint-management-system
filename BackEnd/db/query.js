@@ -39,6 +39,17 @@ export const complaintsQueries = {
     SET isReviewed = 1 
     WHERE complaintId = @complaintId
   `,
+
+  getComplaintById: `
+    SELECT complaintId, userId, description, Time, isReviewed
+    FROM Complaints 
+    WHERE complaintId = @complaintId
+  `,
+
+  insertReviewedComplaint: `
+    INSERT INTO ReviewedComplaints (complaintId, adminId, complaintDescription, reviewedDate)
+    VALUES (@complaintId, @adminId, @complaintDescription, @reviewedDate)
+  `,
 };
 
 export const userQueries = {
@@ -54,4 +65,27 @@ export const adminQueries = {
     INSERT INTO Admin (adminId, name) 
     VALUES (@adminId, @name)
   `,
+
+  getAllReviewedComplaints: `
+  SELECT 
+    ReviewedComplaints.reviewId,
+    ReviewedComplaints.complaintId,
+    ReviewedComplaints.adminId,
+    ReviewedComplaints.complaintDescription,
+    ReviewedComplaints.reviewedDate,
+  FROM ReviewedComplaints
+  JOIN Admin ON ReviewedComplaints.adminId = Admin.adminId
+  ORDER BY ReviewedComplaints.reviewedDate DESC
+`,
+
+  getReviewedComplaintsByAdmin: `
+  SELECT 
+    ReviewedComplaints.reviewId,
+    ReviewedComplaints.complaintId,
+    ReviewedComplaints.complaintDescription,
+    ReviewedComplaints.reviewedDate
+  FROM ReviewedComplaints
+  WHERE ReviewedComplaints.adminId = @adminId
+  ORDER BY ReviewedComplaints.reviewedDate DESC
+`,
 };

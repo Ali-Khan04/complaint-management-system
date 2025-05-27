@@ -11,5 +11,13 @@ complainRouter.delete("/complain/:id", complainsController.deleteComplaint);
 complainRouter.post("/admin/register", complainsController.registerAdmin);
 complainRouter.get("/complain/all", complainsController.getAllComplaints);
 complainRouter.put("/complain/review/:id", complainsController.markAsReviewed);
+complainRouter.get(
+  "/admin/reviewed-complaints",
+  complainsController.getAllReviewedComplaints
+);
+complainRouter.get(
+  "/admin/reviewed-complaints/:adminId",
+  complainsController.getReviewedComplaintsByAdmin
+);
 
 export default complainRouter;
