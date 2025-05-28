@@ -59,6 +59,8 @@ DB_PASSWORD=your_sql_password
 DB_SERVER=localhost
 DB_DATABASE=ComplaintDB
 ```
+⚠️ **Important:** Make sure your **database name**, **table names**, and **column names** exactly match those used in the backend code. Otherwise, queries will fail.
+
 
 Start the backend server:
 ```bash
