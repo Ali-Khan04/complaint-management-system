@@ -1,23 +1,26 @@
 import express from "express";
-import complainsController from "../controllers/compalinController.js";
+import complaintsController from "../controllers/complaintsController.js";
+import adminController from "../controllers/adminController.js";
 
 const complainRouter = express.Router();
-complainRouter.post("/complain", complainsController.createComplaint);
-complainRouter.get("/complain", complainsController.getComplaintsByUser);
-complainRouter.put("/complain/:id", complainsController.updateComplaint);
-complainRouter.delete("/complain/:id", complainsController.deleteComplaint);
 
-// Admin
-complainRouter.post("/admin/register", complainsController.registerAdmin);
-complainRouter.get("/complain/all", complainsController.getAllComplaints);
-complainRouter.put("/complain/review/:id", complainsController.markAsReviewed);
+// User complaint routes
+complainRouter.post("/complain", complaintsController.createComplaint);
+complainRouter.get("/complain", complaintsController.getComplaintsByUser);
+complainRouter.put("/complain/:id", complaintsController.updateComplaint);
+complainRouter.delete("/complain/:id", complaintsController.deleteComplaint);
+complainRouter.get("/complain/all", complaintsController.getAllComplaints);
+
+// Admin routes
+complainRouter.post("/admin/register", adminController.registerAdmin);
+complainRouter.put("/complain/review/:id", adminController.markAsReviewed);
 complainRouter.get(
   "/admin/reviewed-complaints",
-  complainsController.getAllReviewedComplaints
+  adminController.getAllReviewedComplaints
 );
 complainRouter.get(
   "/admin/reviewed-complaints/:adminId",
-  complainsController.getReviewedComplaintsByAdmin
+  adminController.getReviewedComplaintsByAdmin
 );
 
 export default complainRouter;
