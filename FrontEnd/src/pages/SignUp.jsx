@@ -19,13 +19,13 @@ function SignUpPage() {
     const { userId, name, email, password } = state.SignUp;
     try {
       const response = await axios.post(
-        "http://localhost:3000/user-portal/signin",
+        "http://localhost:3000/user-portal/signup",
         { userId, name, email, password },
         { withCredentials: true }
       );
       const data = response.data;
 
-      if (response.ok && data.success) {
+      if (response.status === 201 && data.success) {
         dispatch({ type: "SuccessMessage", payload: true });
         dispatch({ type: "ErrorMessage", payload: false });
         dispatch({ type: "isLoading", payload: false });
@@ -98,8 +98,8 @@ function SignUpPage() {
         </button>
       </form>
       <div className="userFlow-status">
-        {state.successMessage && <p>Signed In</p>}
-        {state.errorMessage && <p>Error Signing In</p>}
+        {state.successMessage && <p>Account Created Successfull!</p>}
+        {state.errorMessage && <p>Error Creating Account</p>}
       </div>
       <Link to="/user-login" className="minimal-link">
         Have an Account? Sign In

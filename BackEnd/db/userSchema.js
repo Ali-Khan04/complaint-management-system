@@ -25,9 +25,15 @@ const User = sequelize.define(
   {
     tableName: "User_table",
     schema: "dbo",
-    timestamps: true,
+    timestamps: false,
     freezeTableName: true,
   }
 );
-
+User.sync({ alter: true })
+  .then(() => {
+    console.log("User table synced successfully");
+  })
+  .catch((error) => {
+    console.error("Error syncing User table:", error);
+  });
 export default User;

@@ -24,13 +24,13 @@ function LoginPage() {
       );
       const data = response.data;
 
-      if (response.ok && data.success) {
+      if (response.status === 200 && data.success) {
         localStorage.setItem("userId", data.user.userId);
         dispatch({ type: "user", payload: data.user });
         dispatch({ type: "SuccessMessage", payload: true });
         dispatch({ type: "ErrorMessage", payload: false });
         dispatch({ type: "isLoading", payload: false });
-        navigate("/user-dashboard", { replace: true });
+        navigate("/user-dashboard");
       } else {
         dispatch({ type: "SuccessMessage", payload: false });
         dispatch({ type: "ErrorMessage", payload: true });

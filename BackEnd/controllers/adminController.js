@@ -1,4 +1,4 @@
-import { complaintsQueries, adminQueries } from "../db/query.js";
+/*import { complaintsQueries, adminQueries } from "../db/query.js";
 import { sql, poolPromise } from "../db/config.js";
 const adminController = {
   markAsReviewed: async (req, res) => {
@@ -112,3 +112,4 @@ const adminController = {
   },
 };
 export default adminController;
+*/
