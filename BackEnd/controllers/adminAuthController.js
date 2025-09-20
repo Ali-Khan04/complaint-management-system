@@ -1,4 +1,4 @@
-import Admin from "../db/adminSchema";
+import Admin from "../db/adminSchema.js";
 import { Op } from "sequelize";
 import jwt from "jsonwebtoken";
 
@@ -16,7 +16,7 @@ export const adminSignIn = async (req, res) => {
   }
   try {
     const validAdmin = await Admin.findOne({
-      where: { [Op.and]: [{ adminId }, { name }] },
+      where: { adminId },
     });
     if (!validAdmin) {
       return res

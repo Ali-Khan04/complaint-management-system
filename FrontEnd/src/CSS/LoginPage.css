@@ -177,3 +177,15 @@ button:hover::after {
 button:active {
   transform: translateY(0);
 }
+.minimal-link {
+  font-size: 14px;
+  color: #4f46e5;
+  text-decoration: none;
+  transition: color 0.2s ease, text-decoration 0.2s ease;
+  cursor: pointer;
+}
+
+.minimal-link:hover {
+  color: #3b82f6;
+  text-decoration: underline;
+}

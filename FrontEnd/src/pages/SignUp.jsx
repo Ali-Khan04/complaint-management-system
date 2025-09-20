@@ -1,40 +1,37 @@
-import useUser from "../hooks/useUser";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import "../CSS/AdminForm.css";
-
-const StaffLogin = () => {
+import "../CSS/LoginPage.css";
+import "../CSS/loginResponsiveness.css";
+import { useNavigate } from "react-router-dom";
+import useUser from "../hooks/useUser";
+import { Link } from "react-router-dom";
+function SignUpPage() {
   const navigate = useNavigate();
   const { state, dispatch } = useUser();
-
   const handleChange = (e) => {
     dispatch({
-      type: "adminSignIn",
+      type: "SignUp",
       payload: { id: e.target.id, value: e.target.value },
     });
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { adminId, name } = state.adminSignIn;
+    dispatch({ type: "isLoading", payload: true });
+    const { userId, name, email, password } = state.SignUp;
     try {
       const response = await axios.post(
-        "http://localhost:3000/user-portal/admin/register",
-        {
-          adminId,
-          name,
-        },
+        "http://localhost:3000/user-portal/signin",
+        { userId, name, email, password },
         { withCredentials: true }
       );
       const data = response.data;
 
       if (response.ok && data.success) {
-        localStorage.setItem("adminId", state.adminSignIn.adminId);
-        localStorage.setItem("adminName", state.adminSignIn.name);
         dispatch({ type: "SuccessMessage", payload: true });
         dispatch({ type: "ErrorMessage", payload: false });
         dispatch({ type: "isLoading", payload: false });
-        navigate("/admin-dashboard");
+        setTimeout(() => {
+          navigate("/user-login");
+        }, 1000);
       } else {
         dispatch({ type: "SuccessMessage", payload: false });
         dispatch({ type: "ErrorMessage", payload: true });
@@ -56,40 +53,42 @@ const StaffLogin = () => {
   };
 
   return (
-    <div className="admin-form-container">
-      <div className="admin-form-header">
-        <h2>Admin Portal</h2>
-      </div>
+    <div className="login-container">
+      <h2>Customer SignUp Portal</h2>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          id="userId"
+          placeholder="Enter your ID"
+          value={state.SignUp.userId}
+          onChange={handleChange}
+          required
+        />
 
-      <form onSubmit={handleSubmit} className="admin-form">
-        <div className="form-group">
-          <label htmlFor="adminId">Admin ID</label>
-          <input
-            type="text"
-            id="adminId"
-            name="adminId"
-            value={state.adminSignIn.adminId}
-            onChange={handleChange}
-            required
-            placeholder="Enter your admin ID"
-            disabled={state.isLoading}
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="name">Name</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={state.adminSignIn.name}
-            onChange={handleChange}
-            required
-            placeholder="Enter your name"
-            disabled={state.isLoading}
-          />
-        </div>
-
+        <input
+          type="text"
+          id="name"
+          placeholder="Enter your Name"
+          value={state.SignUp.name}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="email"
+          id="email"
+          placeholder="Enter your Email"
+          value={state.SignUp.email}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="password"
+          id="password"
+          placeholder="Enter your password"
+          value={state.SignUp.password}
+          onChange={handleChange}
+          required
+        />
         <button
           type="submit"
           className="proceed-btn"
@@ -98,12 +97,15 @@ const StaffLogin = () => {
           {state.isLoading ? "Processing..." : "Proceed to Dashboard"}
         </button>
       </form>
-      <div className="adminFlow-status">
+      <div className="userFlow-status">
         {state.successMessage && <p>Signed In</p>}
         {state.errorMessage && <p>Error Signing In</p>}
       </div>
+      <Link to="/user-login" className="minimal-link">
+        Have an Account? Sign In
+      </Link>
     </div>
   );
-};
+}
 
-export default StaffLogin;
+export default SignUpPage;
