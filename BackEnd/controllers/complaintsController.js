@@ -138,57 +138,6 @@ const complainsController = {
     }
   },
 
-  getAllComplaints: async (req, res) => {
-    try {
-      const complaints = await Complaint.findAll({
-        include: [
-          {
-            model: User,
-            attributes: ["userId", "name", "email"],
-          },
-        ],
-        order: [["time", "DESC"]],
-      });
-
-      res.status(200).json(complaints);
-    } catch (error) {
-      console.error("Error fetching all complaints:", error);
-      res.status(500).json({
-        message: "Server error",
-        error: error.message,
-      });
-    }
-  },
-
-  getComplaintById: async (req, res) => {
-    try {
-      const { id } = req.params;
-
-      const complaint = await Complaint.findByPk(id, {
-        include: [
-          {
-            model: User,
-            attributes: ["userId", "name", "email"],
-          },
-        ],
-      });
-
-      if (!complaint) {
-        return res.status(404).json({
-          message: "Complaint not found",
-        });
-      }
-
-      res.status(200).json(complaint);
-    } catch (error) {
-      console.error("Error fetching complaint:", error);
-      res.status(500).json({
-        message: "Server error",
-        error: error.message,
-      });
-    }
-  },
-
   updateReviewStatus: async (req, res) => {
     try {
       const { id } = req.params;

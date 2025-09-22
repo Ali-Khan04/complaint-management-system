@@ -93,23 +93,6 @@ const adminController = {
     }
   },
 
-  registerAdmin: async (req, res) => {
-    try {
-      const { adminId, name } = req.body;
-      const pool = await poolPromise;
-
-      await pool
-        .request()
-        .input("adminId", sql.Int, adminId)
-        .input("name", sql.NVarChar(100), name)
-        .query(adminQueries.registerAdmin);
-
-      res.status(201).json({ adminId });
-    } catch (error) {
-      console.error("Error registering admin:", error);
-      res.status(500).json({ message: "Server error", error: error.message });
-    }
-  },
 };
 export default adminController;
 */
