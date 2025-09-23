@@ -1,36 +1,37 @@
 import axios from "axios";
 import "../CSS/LoginPage.css";
 import "../CSS/loginResponsiveness.css";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useUser from "../hooks/useUser";
-function LoginPage() {
+import { Link } from "react-router-dom";
+function SignUpPage() {
   const navigate = useNavigate();
   const { state, dispatch } = useUser();
   const handleChange = (e) => {
     dispatch({
-      type: "SignIn",
+      type: "SignUp",
       payload: { id: e.target.id, value: e.target.value },
     });
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
     dispatch({ type: "isLoading", payload: true });
-    const { userId, email, password } = state.SignIn;
+    const { userId, name, email, password } = state.SignUp;
     try {
       const response = await axios.post(
-        "http://localhost:3000/user-portal/login",
-        { userId, email, password },
+        "http://localhost:3000/user-portal/signup",
+        { userId, name, email, password },
         { withCredentials: true }
       );
       const data = response.data;
 
-      if (response.status === 200 && data.success) {
-        localStorage.setItem("userId", data.user.userId);
-        dispatch({ type: "user", payload: data.user });
+      if (response.status === 201 && data.success) {
         dispatch({ type: "SuccessMessage", payload: true });
         dispatch({ type: "ErrorMessage", payload: false });
         dispatch({ type: "isLoading", payload: false });
-        navigate("/user-dashboard");
+        setTimeout(() => {
+          navigate("/user-login");
+        }, 1000);
       } else {
         dispatch({ type: "SuccessMessage", payload: false });
         dispatch({ type: "ErrorMessage", payload: true });
@@ -53,22 +54,30 @@ function LoginPage() {
 
   return (
     <div className="login-container">
-      <h2>Customer Login Portal</h2>
+      <h2>Customer SignUp Portal</h2>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
           id="userId"
           placeholder="Enter your ID"
-          value={state.SignIn?.userId || ""}
+          value={state.SignUp.userId}
           onChange={handleChange}
           required
         />
 
         <input
+          type="text"
+          id="name"
+          placeholder="Enter your Name"
+          value={state.SignUp.name}
+          onChange={handleChange}
+          required
+        />
+        <input
           type="email"
           id="email"
           placeholder="Enter your Email"
-          value={state.SignIn?.email || ""}
+          value={state.SignUp.email}
           onChange={handleChange}
           required
         />
@@ -76,7 +85,7 @@ function LoginPage() {
           type="password"
           id="password"
           placeholder="Enter your password"
-          value={state.SignIn.password || ""}
+          value={state.SignUp.password}
           onChange={handleChange}
           required
         />
@@ -89,14 +98,14 @@ function LoginPage() {
         </button>
       </form>
       <div className="userFlow-status">
-        {state.successMessage && <p>Signed In</p>}
-        {state.errorMessage && <p>Error Signing In</p>}
+        {state.successMessage && <p>Account Created Successfull!</p>}
+        {state.errorMessage && <p>Error Creating Account</p>}
       </div>
-      <Link to="/user-signUp" className="minimal-link">
-        No Account? Sign Up Now
+      <Link to="/user-login" className="minimal-link">
+        Have an Account? Sign In
       </Link>
     </div>
   );
 }
 
-export default LoginPage;
+export default SignUpPage;

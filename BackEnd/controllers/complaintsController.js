@@ -1,22 +1,22 @@
-import { sql, poolPromise } from "../db/config.js";
-import { complaintsQueries } from "../db/query.js";
+import { User, Complaint } from "../db/association.js";
 
 const complainsController = {
   createComplaint: async (req, res) => {
     try {
       const { userId, description } = req.body;
-      const pool = await poolPromise;
-      const currentDate = new Date();
-      const result = await pool
-        .request()
-        .input("userId", sql.Int, userId)
-        .input("description", sql.VarChar(250), description)
-        .input("Time", sql.Date, currentDate)
-        .query(complaintsQueries.createComplaint);
+      const user = await User.findByPk(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
 
-      const complaintId = result.recordset[0].complaintId;
+      const complaint = await Complaint.create({
+        userId,
+        description,
+        isReviewed: null,
+      });
+
       res.status(201).json({
-        complaintId,
+        complaintId: complaint.complaintId,
         message: "Complaint submitted successfully",
       });
     } catch (error) {
@@ -28,13 +28,19 @@ const complainsController = {
   getComplaintsByUser: async (req, res) => {
     try {
       const userId = req.query.userId;
-      const pool = await poolPromise;
-      const result = await pool
-        .request()
-        .input("userId", sql.Int, userId)
-        .query(complaintsQueries.getComplaintsByUser);
 
-      res.status(200).json(result.recordset);
+      const complaints = await Complaint.findAll({
+        where: { userId },
+        include: [
+          {
+            model: User,
+            attributes: ["userId", "name", "email"],
+          },
+        ],
+        order: [["time", "DESC"]],
+      });
+
+      res.status(200).json(complaints);
     } catch (error) {
       console.error("Error fetching complaints:", error);
       res.status(500).json({ message: "Server error", error: error.message });
@@ -43,47 +49,49 @@ const complainsController = {
 
   updateComplaint: async (req, res) => {
     try {
-      const { id } = req.params; // This is actually complaintId
+      const { id } = req.params;
       const userId = req.query.userId || req.body.userId;
       const { description } = req.body;
 
-      const pool = await poolPromise;
+      const complaint = await Complaint.findOne({
+        where: {
+          complaintId: id,
+          userId: userId,
+        },
+      });
 
-      //checking if complaint exists and belongs to the user
-      const checkResult = await pool
-        .request()
-        .input("complaintId", sql.Int, id)
-        .input("userId", sql.Int, userId)
-        .query(complaintsQueries.checkComplaintOwnership);
-
-      if (checkResult.recordset.length === 0) {
+      if (!complaint) {
         return res.status(404).json({
           message:
             "Complaint not found or you don't have permission to update it",
         });
       }
 
-      const result = await pool
-        .request()
-        .input("complaintId", sql.Int, id)
-        .input("userId", sql.Int, userId)
-        .input("description", sql.VarChar, description)
-        .query(complaintsQueries.updateComplaint);
+      const [updatedRowsCount] = await Complaint.update(
+        { description },
+        {
+          where: {
+            complaintId: id,
+            userId: userId,
+          },
+        }
+      );
 
-      console.log("Rows Affected:", result.rowsAffected);
-
-      if (result.rowsAffected[0] > 0) {
-        return res
-          .status(200)
-          .json({ message: "Complaint updated successfully" });
+      if (updatedRowsCount > 0) {
+        return res.status(200).json({
+          message: "Complaint updated successfully",
+        });
       } else {
-        return res.status(400).json({ message: "Failed to update complaint" });
+        return res.status(400).json({
+          message: "Failed to update complaint",
+        });
       }
     } catch (error) {
       console.error("Error in updating Complaint:", error);
-      return res
-        .status(500)
-        .json({ message: "Server error", error: error.message });
+      return res.status(500).json({
+        message: "Server error",
+        error: error.message,
+      });
     }
   },
 
@@ -92,52 +100,71 @@ const complainsController = {
       const { id } = req.params;
       const userId = req.query.userId || req.body.userId;
 
-      const pool = await poolPromise;
+      const complaint = await Complaint.findOne({
+        where: {
+          complaintId: id,
+          userId: userId,
+        },
+      });
 
-      const checkResult = await pool
-        .request()
-        .input("complaintId", sql.Int, id)
-        .input("userId", sql.Int, userId)
-        .query(complaintsQueries.checkComplaintOwnership);
+      if (!complaint) {
+        return res.status(404).json({
+          message:
+            "Complaint not found or you don't have permission to delete it",
+        });
+      }
+      const deletedRowsCount = await Complaint.destroy({
+        where: {
+          complaintId: id,
+          userId: userId,
+        },
+      });
 
-      if (checkResult.recordset.length === 0) {
+      if (deletedRowsCount > 0) {
+        return res.status(200).json({
+          message: "Complaint deleted successfully",
+        });
+      } else {
+        return res.status(400).json({
+          message: "Failed to delete complaint",
+        });
+      }
+    } catch (error) {
+      console.error("Error in deleteComplaint:", error);
+      return res.status(500).json({
+        message: "Server error",
+        error: error.message,
+      });
+    }
+  },
+
+  updateReviewStatus: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { isReviewed } = req.body;
+
+      const [updatedRowsCount] = await Complaint.update(
+        { isReviewed },
+        {
+          where: { complaintId: id },
+        }
+      );
+
+      if (updatedRowsCount > 0) {
+        return res.status(200).json({
+          message: "Review status updated successfully",
+        });
+      } else {
         return res.status(404).json({
           message: "Complaint not found",
         });
       }
-
-      const result = await pool
-        .request()
-        .input("complaintId", sql.Int, id)
-        .input("userId", sql.Int, userId)
-        .query(complaintsQueries.deleteComplaint);
-
-      if (result.rowsAffected[0] > 0) {
-        return res
-          .status(200)
-          .json({ message: "Complaint deleted successfully" });
-      } else {
-        return res.status(400).json({ message: "Failed to delete complaint" });
-      }
     } catch (error) {
-      console.error("Error in deleteComplaint:", error);
-      return res
-        .status(500)
-        .json({ message: "Server error", error: error.message });
-    }
-  },
-
-  getAllComplaints: async (req, res) => {
-    try {
-      const pool = await poolPromise;
-      const result = await pool
-        .request()
-        .query(complaintsQueries.getAllComplaints);
-
-      res.status(200).json(result.recordset);
-    } catch (error) {
-      console.error("Error fetching all complaints:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      console.error("Error updating review status:", error);
+      res.status(500).json({
+        message: "Server error",
+        error: error.message,
+      });
     }
   },
 };

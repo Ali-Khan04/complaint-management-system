@@ -2,15 +2,28 @@ import express from "express";
 import cors from "cors";
 import userRoutes from "./routes/userRoutes.js";
 import complainRouter from "./routes/complainsRoute.js";
+import sequelize from "./db/config.js";
+import cookieParser from "cookie-parser";
+import adminRouter from "./routes/adminRoutes.js";
 
 const app = express();
 const PORT = 3000;
-
-app.use(cors());
+sequelize
+  .authenticate()
+  .then(() => console.log("Connected to Sql Server"))
+  .catch((err) => console.error("Error Connected to Sql Server :", err));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+app.use(cookieParser());
 app.use(express.json());
 
 app.use("/user-portal", userRoutes);
 app.use("/user-portal", complainRouter);
+app.use("/admin", adminRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

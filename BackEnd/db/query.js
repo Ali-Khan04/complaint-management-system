@@ -1,3 +1,5 @@
+/* Previous raw queries before Sequelize refactor
+
 export const complaintsQueries = {
   createComplaint: `
     INSERT INTO Complaints (userId, description, Time)
@@ -67,25 +69,9 @@ export const adminQueries = {
   `,
 
   getAllReviewedComplaints: `
-  SELECT 
-    ReviewedComplaints.reviewId,
-    ReviewedComplaints.complaintId,
-    ReviewedComplaints.adminId,
-    ReviewedComplaints.complaintDescription,
-    ReviewedComplaints.reviewedDate,
-  FROM ReviewedComplaints
-  JOIN Admin ON ReviewedComplaints.adminId = Admin.adminId
-  ORDER BY ReviewedComplaints.reviewedDate DESC
-`,
-
-  getReviewedComplaintsByAdmin: `
-  SELECT 
-    ReviewedComplaints.reviewId,
-    ReviewedComplaints.complaintId,
-    ReviewedComplaints.complaintDescription,
-    ReviewedComplaints.reviewedDate
-  FROM ReviewedComplaints
-  WHERE ReviewedComplaints.adminId = @adminId
-  ORDER BY ReviewedComplaints.reviewedDate DESC
-`,
+  SELECT *
+FROM ReviewedComplaints
+ORDER BY reviewedDate DESC
+`
 };
+*/
