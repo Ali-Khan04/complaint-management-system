@@ -37,6 +37,7 @@ const ReviewedComplaints = sequelize.define(
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
+      defaultValue: sequelize.literal("GETDATE()"),
     },
   },
   {

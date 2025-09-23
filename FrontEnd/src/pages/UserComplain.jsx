@@ -64,9 +64,11 @@ function UserComplain() {
   return (
     <div className="user-complain-container">
       <h2>Submit Your Complaint</h2>
-
-      {error && <div className="error-message">{error}</div>}
-      {success && <div className="success-message">{success}</div>}
+      <div className="userFlow">
+        {" "}
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
+      </div>
 
       <form onSubmit={handleSubmit}>
         <textarea

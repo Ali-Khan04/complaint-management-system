@@ -1,3 +1,5 @@
+/* Previous raw queries before Sequelize refactor
+
 export const complaintsQueries = {
   createComplaint: `
     INSERT INTO Complaints (userId, description, Time)
@@ -72,3 +74,4 @@ FROM ReviewedComplaints
 ORDER BY reviewedDate DESC
 `
 };
+*/

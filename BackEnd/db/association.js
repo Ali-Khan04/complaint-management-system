@@ -1,6 +1,7 @@
 import User from "./userSchema.js";
 import Complaint from "./complainSchema.js";
 import ReviewedComplaints from "./reviewedComplainsSchema.js";
+import Admin from "./adminSchema.js";
 
 Complaint.belongsTo(User, {
   foreignKey: "userId",
@@ -20,5 +21,14 @@ ReviewedComplaints.belongsTo(Complaint, {
   foreignKey: "complaintId",
   targetKey: "complaintId",
 });
+Admin.hasMany(ReviewedComplaints, {
+  foreignKey: "adminId",
+  sourceKey: "adminId",
+});
 
-export { User, Complaint, ReviewedComplaints };
+ReviewedComplaints.belongsTo(Admin, {
+  foreignKey: "adminId",
+  targetKey: "adminId",
+});
+
+export { User, Complaint, ReviewedComplaints, Admin };

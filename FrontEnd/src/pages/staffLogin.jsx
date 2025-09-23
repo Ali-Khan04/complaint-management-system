@@ -17,39 +17,59 @@ const StaffLogin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { adminId, name } = state.adminSignIn;
+
+    dispatch({ type: "isLoading", payload: true });
+
     try {
       const response = await axios.post(
-        "http://localhost:3000/user-portal/admin/register",
+        "http://localhost:3000/admin/login",
         {
           adminId,
           name,
         },
         { withCredentials: true }
       );
-      const data = response.data;
 
-      if (response.ok && data.success) {
-        localStorage.setItem("adminId", state.adminSignIn.adminId);
-        localStorage.setItem("adminName", state.adminSignIn.name);
+      const data = response.data;
+      console.log("Response data:", data);
+
+      if (response.status === 200 && data.success) {
+        localStorage.setItem("adminId", data.admin.adminId);
+        localStorage.setItem("adminName", data.admin.name);
+        localStorage.setItem("adminEmail", data.admin.email);
+
         dispatch({ type: "SuccessMessage", payload: true });
         dispatch({ type: "ErrorMessage", payload: false });
         dispatch({ type: "isLoading", payload: false });
+
+        console.log("Login successful, navigating...");
         navigate("/admin-dashboard");
       } else {
         dispatch({ type: "SuccessMessage", payload: false });
         dispatch({ type: "ErrorMessage", payload: true });
         dispatch({ type: "isLoading", payload: false });
+        alert(data.message || "Login failed");
       }
     } catch (error) {
-      if (error.response) {
-        alert(error.response.data.message || "Server error");
-      } else {
-        alert("Network error. Please try again.");
-      }
+      console.error("Login error:", error);
+
       dispatch({ type: "SuccessMessage", payload: false });
       dispatch({ type: "ErrorMessage", payload: true });
       dispatch({ type: "isLoading", payload: false });
+
+      if (error.response) {
+        const errorMessage = error.response.data?.message || "Server error";
+        alert(errorMessage);
+        console.log("Server error:", error.response.status, errorMessage);
+      } else if (error.request) {
+        alert("No response from server. Please check your connection.");
+        console.log("Network error:", error.request);
+      } else {
+        alert("An unexpected error occurred.");
+        console.log("Unexpected error:", error.message);
+      }
     }
+
     setTimeout(() => {
       dispatch({ type: "clearMessage" });
     }, 2000);
@@ -98,9 +118,12 @@ const StaffLogin = () => {
           {state.isLoading ? "Processing..." : "Proceed to Dashboard"}
         </button>
       </form>
+
       <div className="adminFlow-status">
-        {state.successMessage && <p>Signed In</p>}
-        {state.errorMessage && <p>Error Signing In</p>}
+        {state.successMessage && (
+          <p style={{ color: "green" }}>Signed In Successfully!</p>
+        )}
+        {state.errorMessage && <p style={{ color: "red" }}>Error Signing In</p>}
       </div>
     </div>
   );
