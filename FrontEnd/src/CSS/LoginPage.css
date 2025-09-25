@@ -189,3 +189,13 @@ button:active {
   color: #3b82f6;
   text-decoration: underline;
 }
+
+.userFlow-status.success {
+  color: #2e7d32;
+  font-weight: bolder;
+}
+
+.userFlow-status.error {
+  color: #c62828;
+  font-weight: bolder;
+}

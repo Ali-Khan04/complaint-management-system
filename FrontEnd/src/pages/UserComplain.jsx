@@ -2,36 +2,43 @@ import React, { useState } from "react";
 import axios from "axios";
 import "../CSS/Complaint.css";
 import { Link } from "react-router-dom";
+import useUser from "../hooks/useUser";
 
 function UserComplain() {
   const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const { state, dispatch } = useUser();
 
   const handleChange = (e) => {
     setDescription(e.target.value);
-    if (error) setError("");
-    if (success) setSuccess("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!description.trim()) {
-      setError("Please enter a complaint description.");
+      dispatch({
+        type: "setMessage",
+        payload: {
+          type: "error",
+          text: "Please enter a complaint description.",
+        },
+      });
       return;
     }
 
     const userId = localStorage.getItem("userId");
     if (!userId) {
-      setError("User not logged in. Please log in again.");
+      dispatch({
+        type: "setMessage",
+        payload: {
+          type: "error",
+          text: "User not logged in. Please log in again.",
+        },
+      });
       return;
     }
 
-    setLoading(true);
-    setError("");
-    setSuccess("");
+    dispatch({ type: "isLoading", payload: true });
 
     try {
       const response = await axios.post(
@@ -42,32 +49,48 @@ function UserComplain() {
         }
       );
 
-      setSuccess(
-        `Complaint submitted successfully! ID: ${response.data.complaintId}`
-      );
+      dispatch({
+        type: "setMessage",
+        payload: {
+          type: "success",
+          text: `Complaint submitted successfully! ID: ${response.data.complaintId}`,
+        },
+      });
       setDescription("");
     } catch (error) {
       console.error("Error submitting complaint:", error);
 
+      let errMsg = "Error submitting complaint. Please try again.";
       if (error.response?.status === 404) {
-        setError("User not found. Please log in again.");
+        errMsg = "User not found. Please log in again.";
       } else if (error.response?.data?.message) {
-        setError(error.response.data.message);
-      } else {
-        setError("Error submitting complaint. Please try again.");
+        errMsg = error.response.data.message;
       }
+
+      dispatch({
+        type: "setMessage",
+        payload: { type: "error", text: errMsg },
+      });
     } finally {
-      setLoading(false);
+      dispatch({ type: "isLoading", payload: false });
     }
+
+    setTimeout(() => {
+      dispatch({ type: "clearMessage" });
+    }, 2000);
   };
 
   return (
     <div className="user-complain-container">
       <h2>Submit Your Complaint</h2>
+
       <div className="userFlow">
-        {" "}
-        {error && <div className="error-message">{error}</div>}
-        {success && <div className="success-message">{success}</div>}
+        {state.successMessage && (
+          <div className="success-message">{state.message?.text}</div>
+        )}
+        {state.errorMessage && (
+          <div className="error-message">{state.message?.text}</div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -78,13 +101,13 @@ function UserComplain() {
           required
           rows={6}
           placeholder="Write your complaint here..."
-          disabled={loading}
+          disabled={state.isLoading}
           maxLength={250}
         />
         <div className="char-count">{description.length}/250 characters</div>
 
-        <button type="submit" disabled={loading || !description.trim()}>
-          {loading ? "Submitting..." : "Submit Complaint"}
+        <button type="submit" disabled={state.isLoading || !description.trim()}>
+          {state.isLoading ? "Submitting..." : "Submit Complaint"}
         </button>
       </form>
 

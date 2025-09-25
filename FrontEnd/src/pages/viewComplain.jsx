@@ -1,88 +1,112 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../CSS/viewComplain.css";
+import useUser from "../hooks/useUser";
 
 const ViewComplain = () => {
   const [complaints, setComplaints] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editDescription, setEditDescription] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+
+  const { state, dispatch } = useUser();
   const userId = localStorage.getItem("userId");
 
   useEffect(() => {
     const fetchComplaints = async () => {
       if (!userId) {
-        setError("User not logged in. Please log in again.");
+        dispatch({
+          type: "setMessage",
+          payload: {
+            type: "error",
+            text: "User not logged in. Please log in again.",
+          },
+        });
         return;
       }
 
-      setLoading(true);
+      dispatch({ type: "isLoading", payload: true });
       try {
         const res = await axios.get(
           `http://localhost:3000/user-portal/complain?userId=${userId}`
         );
         setComplaints(res.data);
-        setError("");
+
+        dispatch({
+          type: "setMessage",
+          payload: {
+            type: "success",
+            text: "Complaints fetched successfully!",
+          },
+        });
       } catch (error) {
         console.error("Error fetching complaints:", error);
-        if (error.response?.data?.message) {
-          setError(error.response.data.message);
-        } else {
-          setError("Error fetching complaints. Please try again.");
-        }
+
+        const errMsg =
+          error.response?.data?.message ||
+          "Error fetching complaints. Please try again.";
+        dispatch({
+          type: "setMessage",
+          payload: { type: "error", text: errMsg },
+        });
       } finally {
-        setLoading(false);
+        dispatch({ type: "isLoading", payload: false });
+        setTimeout(() => {
+          dispatch({ type: "clearMessage" });
+        }, 2000);
       }
     };
 
     fetchComplaints();
-  }, [userId]);
+  }, [userId, dispatch]);
 
-  const getComplaintId = (complaint) => {
-    return complaint.complaintId;
-  };
+  const getComplaintId = (complaint) => complaint.complaintId;
 
   const handleDelete = async (complaint) => {
     const complaintId = getComplaintId(complaint);
-
     if (!complaintId) {
-      alert("Error: Complaint ID not found");
+      dispatch({
+        type: "setMessage",
+        payload: { type: "error", text: "Error: Complaint ID not found." },
+      });
       return;
     }
 
-    if (window.confirm("Are you sure you want to delete this complaint?")) {
-      setLoading(true);
-      try {
-        await axios.delete(
-          `http://localhost:3000/user-portal/complain/${complaintId}?userId=${userId}`
-        );
+    if (!window.confirm("Are you sure you want to delete this complaint?"))
+      return;
 
-        setComplaints(
-          complaints.filter((c) => getComplaintId(c) !== complaintId)
-        );
-        alert("Complaint deleted successfully!");
-      } catch (error) {
-        console.error("Error deleting complaint:", error);
+    dispatch({ type: "isLoading", payload: true });
+    try {
+      await axios.delete(
+        `http://localhost:3000/user-portal/complain/${complaintId}?userId=${userId}`
+      );
 
-        if (error.response?.status === 404) {
-          alert(
-            "Complaint not found or you don't have permission to delete it."
-          );
-        } else if (error.response?.data?.message) {
-          alert(error.response.data.message);
-        } else {
-          alert("Failed to delete complaint. Please try again.");
-        }
-      } finally {
-        setLoading(false);
-      }
+      setComplaints(
+        complaints.filter((c) => getComplaintId(c) !== complaintId)
+      );
+      dispatch({
+        type: "setMessage",
+        payload: { type: "success", text: "Complaint deleted successfully!" },
+      });
+    } catch (error) {
+      console.error("Error deleting complaint:", error);
+
+      const errMsg =
+        error.response?.data?.message ||
+        "Failed to delete complaint. Please try again.";
+      dispatch({
+        type: "setMessage",
+        payload: { type: "error", text: errMsg },
+      });
+    } finally {
+      dispatch({ type: "isLoading", payload: false });
+      setTimeout(() => {
+        dispatch({ type: "clearMessage" });
+      }, 2000);
     }
   };
 
   const handleEdit = (complaint) => {
-    const complaintId = getComplaintId(complaint);
-    setEditingId(complaintId);
+    setEditingId(getComplaintId(complaint));
     setEditDescription(complaint.description);
   };
 
@@ -90,21 +114,33 @@ const ViewComplain = () => {
     const complaintId = getComplaintId(complaint);
 
     if (!complaintId) {
-      alert("Error: Complaint ID not found");
+      dispatch({
+        type: "setMessage",
+        payload: { type: "error", text: "Error: Complaint ID not found." },
+      });
       return;
     }
 
     if (!editDescription.trim()) {
-      alert("Please enter a valid description.");
+      dispatch({
+        type: "setMessage",
+        payload: { type: "error", text: "Please enter a valid description." },
+      });
       return;
     }
 
     if (editDescription.length > 250) {
-      alert("Description must be 250 characters or less.");
+      dispatch({
+        type: "setMessage",
+        payload: {
+          type: "error",
+          text: "Description must be 250 characters or less.",
+        },
+      });
       return;
     }
 
-    setLoading(true);
+    dispatch({ type: "isLoading", payload: true });
     try {
       await axios.put(
         `http://localhost:3000/user-portal/complain/${complaintId}?userId=${userId}`,
@@ -121,19 +157,25 @@ const ViewComplain = () => {
 
       setEditingId(null);
       setEditDescription("");
-      alert("Complaint updated successfully!");
+      dispatch({
+        type: "setMessage",
+        payload: { type: "success", text: "Complaint updated successfully!" },
+      });
     } catch (error) {
       console.error("Error updating complaint:", error);
 
-      if (error.response?.status === 404) {
-        alert("Complaint not found or you don't have permission to update it.");
-      } else if (error.response?.data?.message) {
-        alert(error.response.data.message);
-      } else {
-        alert("Failed to update complaint. Please try again.");
-      }
+      const errMsg =
+        error.response?.data?.message ||
+        "Failed to update complaint. Please try again.";
+      dispatch({
+        type: "setMessage",
+        payload: { type: "error", text: errMsg },
+      });
     } finally {
-      setLoading(false);
+      dispatch({ type: "isLoading", payload: false });
+      setTimeout(() => {
+        dispatch({ type: "clearMessage" });
+      }, 2000);
     }
   };
 
@@ -145,7 +187,7 @@ const ViewComplain = () => {
   const formatDate = (dateString) => {
     try {
       return new Date(dateString).toLocaleString();
-    } catch (error) {
+    } catch {
       return "Invalid date";
     }
   };
@@ -166,11 +208,18 @@ const ViewComplain = () => {
         <h2>Your Complaints</h2>
       </div>
 
-      {error && <div className="error-message">{error}</div>}
+      <div className="userFlow">
+        {state.successMessage && (
+          <div className="success-message">{state.message?.text}</div>
+        )}
+        {state.errorMessage && (
+          <div className="error-message">{state.message?.text}</div>
+        )}
+      </div>
 
-      {loading && complaints.length === 0 ? (
+      {state.isLoading && complaints.length === 0 ? (
         <div className="loading-message">Loading complaints...</div>
-      ) : complaints.length === 0 && !error ? (
+      ) : complaints.length === 0 && !state.errorMessage ? (
         <div className="no-complaints">
           <p>No complaints submitted yet.</p>
         </div>
@@ -189,7 +238,7 @@ const ViewComplain = () => {
                       rows="4"
                       placeholder="Edit your complaint..."
                       maxLength={250}
-                      disabled={loading}
+                      disabled={state.isLoading}
                     />
                     <div className="char-count">
                       {editDescription.length}/250 characters
@@ -198,14 +247,14 @@ const ViewComplain = () => {
                       <button
                         onClick={() => handleSaveEdit(complaint)}
                         className="save-btn"
-                        disabled={loading || !editDescription.trim()}
+                        disabled={state.isLoading || !editDescription.trim()}
                       >
-                        {loading ? "Saving..." : "Save"}
+                        {state.isLoading ? "Saving..." : "Save"}
                       </button>
                       <button
                         onClick={handleCancelEdit}
                         className="cancel-btn"
-                        disabled={loading}
+                        disabled={state.isLoading}
                       >
                         Cancel
                       </button>
@@ -252,14 +301,14 @@ const ViewComplain = () => {
                       <button
                         onClick={() => handleEdit(complaint)}
                         className="edit-btn"
-                        disabled={loading}
+                        disabled={state.isLoading}
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDelete(complaint)}
                         className="delete-btn"
-                        disabled={loading}
+                        disabled={state.isLoading}
                       >
                         Delete
                       </button>

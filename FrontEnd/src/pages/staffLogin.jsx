@@ -23,51 +23,56 @@ const StaffLogin = () => {
     try {
       const response = await axios.post(
         "http://localhost:3000/admin/login",
-        {
-          adminId,
-          name,
-        },
+        { adminId, name },
         { withCredentials: true }
       );
 
       const data = response.data;
-      console.log("Response data:", data);
 
       if (response.status === 200 && data.success) {
         localStorage.setItem("adminId", data.admin.adminId);
         localStorage.setItem("adminName", data.admin.name);
         localStorage.setItem("adminEmail", data.admin.email);
 
-        dispatch({ type: "SuccessMessage", payload: true });
-        dispatch({ type: "ErrorMessage", payload: false });
+        dispatch({
+          type: "setMessage",
+          payload: { type: "success", text: "Signed In Successfully!" },
+        });
         dispatch({ type: "isLoading", payload: false });
 
-        console.log("Login successful, navigating...");
         navigate("/admin-dashboard");
       } else {
-        dispatch({ type: "SuccessMessage", payload: false });
-        dispatch({ type: "ErrorMessage", payload: true });
+        dispatch({
+          type: "setMessage",
+          payload: { type: "error", text: data.message || "Login failed" },
+        });
         dispatch({ type: "isLoading", payload: false });
-        alert(data.message || "Login failed");
       }
     } catch (error) {
-      console.error("Login error:", error);
-
-      dispatch({ type: "SuccessMessage", payload: false });
-      dispatch({ type: "ErrorMessage", payload: true });
-      dispatch({ type: "isLoading", payload: false });
-
       if (error.response) {
         const errorMessage = error.response.data?.message || "Server error";
-        alert(errorMessage);
-        console.log("Server error:", error.response.status, errorMessage);
+        dispatch({
+          type: "setMessage",
+          payload: { type: "error", text: errorMessage },
+        });
       } else if (error.request) {
-        alert("No response from server. Please check your connection.");
-        console.log("Network error:", error.request);
+        dispatch({
+          type: "setMessage",
+          payload: {
+            type: "error",
+            text: "No response from server. Please check your connection.",
+          },
+        });
       } else {
-        alert("An unexpected error occurred.");
-        console.log("Unexpected error:", error.message);
+        dispatch({
+          type: "setMessage",
+          payload: {
+            type: "error",
+            text: "An unexpected error occurred.",
+          },
+        });
       }
+      dispatch({ type: "isLoading", payload: false });
     }
 
     setTimeout(() => {
@@ -119,12 +124,11 @@ const StaffLogin = () => {
         </button>
       </form>
 
-      <div className="adminFlow-status">
-        {state.successMessage && (
-          <p style={{ color: "green" }}>Signed In Successfully!</p>
-        )}
-        {state.errorMessage && <p style={{ color: "red" }}>Error Signing In</p>}
-      </div>
+      {state.message.text && (
+        <div className={`userFlow-status ${state.message.type}`}>
+          <p>{state.message.text}</p>
+        </div>
+      )}
     </div>
   );
 };

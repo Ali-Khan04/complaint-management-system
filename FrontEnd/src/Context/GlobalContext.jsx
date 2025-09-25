@@ -18,8 +18,10 @@ const intialState = {
     name: "",
   },
   user: null,
-  successMessage: null,
-  errorMessage: null,
+  message: {
+    type: null,
+    text: "",
+  },
   isLoading: false,
 };
 const reducer = (state, action) => {
@@ -44,14 +46,15 @@ const reducer = (state, action) => {
       };
     case "user":
       return { ...state, user: action.payload };
-    case "SuccessMessage":
-      return { ...state, successMessage: action.payload };
-    case "ErrorMessage":
-      return { ...state, errorMessage: action.payload };
+    case "setMessage":
+      return {
+        ...state,
+        message: { type: action.payload.type, text: action.payload.text },
+      };
     case "isLoading":
       return { ...state, isLoading: action.payload };
     case "clearMessage":
-      return { ...state, successMessage: null, errorMessage: null };
+      return { ...state, message: { type: null, text: "" } };
     case "reset":
       return {
         ...state,

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "../CSS/StaffDashboard.css";
+import useUser from "../hooks/useUser";
 
 function StaffDashboard() {
+  const { state, dispatch } = useUser();
   const [complaints, setComplaints] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchComplaints();
@@ -13,57 +13,75 @@ function StaffDashboard() {
 
   const fetchComplaints = async () => {
     try {
-      setLoading(true);
+      dispatch({ type: "isLoading", payload: true });
       const response = await axios.get(
         "http://localhost:3000/admin/complaints"
       );
       setComplaints(response.data);
-      setError(null);
     } catch (err) {
+      dispatch({
+        type: "setMessage",
+        payload: { type: "error", text: "Error fetching complaints" },
+      });
       console.error("Error fetching complaints:", err);
-      setError("Failed to fetch complaints. Please try again.");
     } finally {
-      setLoading(false);
+      dispatch({ type: "isLoading", payload: false });
     }
   };
 
   const markAsReviewed = async (complaintId) => {
     try {
-      // Get adminId from localStorage
       const adminId = localStorage.getItem("adminId");
-
       if (!adminId) {
-        alert("Admin ID not found. Please login again.");
+        dispatch({
+          type: "setMessage",
+          payload: {
+            type: "error",
+            text: "Admin ID not found. Please login again.",
+          },
+        });
         return;
       }
-      const response = await axios.put(
+
+      await axios.put(
         `http://localhost:3000/admin/complaints/${complaintId}/review`,
-        {
-          adminId: parseInt(adminId),
-        }
+        { adminId: parseInt(adminId) }
       );
 
-      // Update the local state
       setComplaints((prev) =>
         prev.map((c) =>
           c.complaintId === complaintId ? { ...c, isReviewed: true } : c
         )
       );
 
-      alert(`Complaint ${complaintId} marked as reviewed successfully!`);
-      console.log("Review response:", response.data);
+      dispatch({
+        type: "setMessage",
+        payload: {
+          type: "success",
+          text: `Complaint ${complaintId} marked as reviewed successfully!`,
+        },
+      });
     } catch (err) {
       console.error("Error updating complaint:", err);
 
       if (err.response?.data?.message) {
-        alert(`Error: ${err.response.data.message}`);
+        dispatch({
+          type: "setMessage",
+          payload: { type: "error", text: err.response.data.message },
+        });
       } else {
-        alert("Failed to mark complaint as reviewed. Please try again.");
+        dispatch({
+          type: "setMessage",
+          payload: {
+            type: "error",
+            text: "Failed to mark complaint as reviewed. Please try again.",
+          },
+        });
       }
     }
   };
 
-  if (loading) {
+  if (state.isLoading) {
     return (
       <div className="staff-dashboard">
         <div className="staff-header">
@@ -74,14 +92,14 @@ function StaffDashboard() {
     );
   }
 
-  if (error) {
+  if (state.message.type === "error" && complaints.length === 0) {
     return (
       <div className="staff-dashboard">
         <div className="staff-header">
           <h2>Staff Dashboard</h2>
         </div>
         <div className="error">
-          <p>{error}</p>
+          <p>{state.message.text}</p>
           <button onClick={fetchComplaints} className="retry-btn">
             Retry
           </button>
@@ -105,6 +123,12 @@ function StaffDashboard() {
         </div>
       </div>
 
+      {state.message.text && (
+        <div className={`userFlow-status ${state.message.type}`}>
+          <p>{state.message.text}</p>
+        </div>
+      )}
+
       <div className="staff-complaints-list">
         {complaints.length === 0 ? (
           <div className="no-complaints">
@@ -122,7 +146,6 @@ function StaffDashboard() {
                 </p>
               </div>
 
-              {/* Display user info if available from associations */}
               {c.User && (
                 <div className="user-info">
                   <p>

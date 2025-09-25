@@ -26,25 +26,49 @@ function SignUpPage() {
       const data = response.data;
 
       if (response.status === 201 && data.success) {
-        dispatch({ type: "SuccessMessage", payload: true });
-        dispatch({ type: "ErrorMessage", payload: false });
+        dispatch({
+          type: "setMessage",
+          payload: { type: "success", text: "Sign Up Successfull!" },
+        });
         dispatch({ type: "isLoading", payload: false });
         setTimeout(() => {
           navigate("/user-login");
         }, 1000);
       } else {
-        dispatch({ type: "SuccessMessage", payload: false });
-        dispatch({ type: "ErrorMessage", payload: true });
+        dispatch({
+          type: "setMessage",
+          payload: { type: "error", text: "Error Signing Up!" },
+        });
         dispatch({ type: "isLoading", payload: false });
       }
     } catch (error) {
       if (error.response) {
-        alert(error.response.data.message || "Server error");
+        dispatch({
+          type: "setMessage",
+          payload: {
+            type: "error",
+            text:
+              error.response.data?.message ||
+              "SignUp failed. Please try again.",
+          },
+        });
+      } else if (error.request) {
+        dispatch({
+          type: "setMessage",
+          payload: {
+            type: "error",
+            text: "No response from server. Please check your internet or try again later.",
+          },
+        });
       } else {
-        alert("Network error. Please try again.");
+        dispatch({
+          type: "setMessage",
+          payload: {
+            type: "error",
+            text: "Unexpected error occurred. Please refresh the page and try again.",
+          },
+        });
       }
-      dispatch({ type: "SuccessMessage", payload: false });
-      dispatch({ type: "ErrorMessage", payload: true });
       dispatch({ type: "isLoading", payload: false });
     }
     setTimeout(() => {
@@ -97,9 +121,8 @@ function SignUpPage() {
           {state.isLoading ? "Processing..." : "Proceed to Dashboard"}
         </button>
       </form>
-      <div className="userFlow-status">
-        {state.successMessage && <p>Account Created Successfull!</p>}
-        {state.errorMessage && <p>Error Creating Account</p>}
+      <div className={`userFlow-status ${state.message.type}`}>
+        <p>{state.message.text}</p>
       </div>
       <Link to="/user-login" className="minimal-link">
         Have an Account? Sign In
