@@ -14,20 +14,22 @@
 - Simple login (name and ID based)
 
 ### 🛡️ Future Enhancements
-- Role-based authentication using **JWT**
-- Improved complaint filtering, sorting, and search
+- Advanced complaint **filtering, sorting, and search**
+- Additional analytics & dashboard for admins
 
 ---
 
 ## 🧱 Tech Stack
 
-| Tech           | Role                |
-|----------------|---------------------|
-| React          | Frontend (UI)       |
-| Express.js     | Backend API         |
-| SQL Server     | Database            |
-| Axios          | API communication   |
-| CSS            | Styling             |
+| Tech           | Role                           |
+|----------------|-------------------------------|
+| React          | Frontend (UI)                  |
+| Express.js     | Backend API                    |
+| Sequelize      | ORM for SQL Server             |
+| SQL Server     | Database                       |
+| Axios          | API communication              |
+| CSS            | Styling                        |
+| JWT            | Role-based authentication      |
 
 ---
 
